@@ -1,5 +1,6 @@
 from transformers.generation.utils import ModelOutput
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
+from peft import PeftModel
 from typing import Optional, List, Dict
 import torch
 import torch.nn as nn
