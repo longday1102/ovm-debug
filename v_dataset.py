@@ -77,8 +77,4 @@ class VerifierDataset:
         result["input_ids"], result["attention_mask"], result["labels"], result["v_labels"] = self.left_padding(
             result["input_ids"], result["attention_mask"], result["labels"], result["v_labels"], padding_value = IGNORE_INDEX)
         
-        return result
-    
-   
-
-        
+        return result   
