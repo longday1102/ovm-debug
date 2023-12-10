@@ -18,6 +18,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--checkpoint_dir", default = None, type = str)
     parser.add_argument("--state_dir", default = None, type = str)
+    parser.add_argument("--generator_path", default = None, type = str)
     args = parser.parse_args()
        
     backend = "nccl"
@@ -25,7 +26,7 @@ if __name__ == "__main__":
     local_rank = int(os.environ["LOCAL_RANK"])
 
     model_path = "mistralai/Mistral-7B-v0.1"
-    peft_path = "checkpoint/generator"
+    peft_path = args.generator_path
 
     generator, tokenizer = load_generator_and_tokenizer(
         model_path = model_path,
