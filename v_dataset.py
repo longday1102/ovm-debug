@@ -26,6 +26,7 @@ class VerifierDataset:
             lambda x: len(self.tokenizer(self.prompter.verifier_prompt(question = x["question"], answer = x["answer"])).input_ids) + 1 <= self.max_length
         )           
         if mapping:
+            self.dataset = self.dataset.select(rang(10))
             self.dataset = self.dataset.map(self.get_items, num_proc = 16)
             self.dataset = self.dataset.remove_columns(["question", "answer", "candidate", "label"])
             
