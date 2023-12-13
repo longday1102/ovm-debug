@@ -105,16 +105,17 @@ class VerifierModel(nn.Module):
         labels = torch.where(labels.ne(IGNORE_INDEX), labels, 0)
         return F.mse_loss(scores, labels, reduction = 'sum') / scores.shape[0]
     
-    def save_model(self, output_dir: str = None):
-        self.backbone.module.save_pretrained(f"{output_dir}/backbone")    # Training with DDP
-        torch.save(
-            {
-                "gain": self.gain.module.state_dict(),
-                "bias": self.bias.module.state_dict(),
-                "vscore_head": self.vscore_head.module.state_dict(),
-            },
-            f"{output_dir}/vrf_params"
-        )
+def save_model(self, verifier, output_dir: str = None):
+    # Saving when training with DDP
+    verifier.module.backbone.save_pretrained(f"{output_dir}/backbone")  
+    torch.save(
+        {
+            "gain": verifier.module.gain.state_dict(),
+            "bias": verifier.module.bias.state_dict(),
+            "vscore_head": verifier.module.vscore_head.state_dict(),
+        },
+        f"{output_dir}/vrf_params"
+    )
         
     
 def load_generator_and_tokenizer(generator_path: str, load_k_bit: bool = False, local_rank: int = None): 
