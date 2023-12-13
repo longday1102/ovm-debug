@@ -93,40 +93,39 @@ if __name__ == "__main__":
             verifier.train()
             for batch in train_dataloader:
                 batch = {k:v.to(local_rank) for k, v in batch.items()}
-                # outputs = verifier(
-                #     input_ids = batch["input_ids"],
-                #     attention_mask = batch["attention_mask"],
-                #     labels = batch["labels"],
-                #     v_labels = batch["v_labels"],
-                #     output_all_losses = True,
-                # )
-
-                outputs = verifier.backbone(
+                print(batch)
+                print(verifier.module.backbone.device)
+                print(verifier.module.gain.device)
+                print(verifier.module.bias.device)
+                print(next(verifier.module.vscore_head.parameters()).device)
+                outputs = verifier(
                     input_ids = batch["input_ids"],
                     attention_mask = batch["attention_mask"],
                     labels = batch["labels"],
+                    v_labels = batch["v_labels"],
+                    output_all_losses = True,
                 )
                     
-            #     loss = outputs.loss
-            #     all_losses = outputs.all_losses
-            #     total_loss += loss.item()
-            #     loss.backward()
+                loss = outputs.loss
+                all_losses = outputs.all_losses
+                total_loss += loss.item()
+                loss.backward()
                     
-            #     clip_grad_norm_(verifier.parameters(), max_norm_value)
-            #     optimizer.step()
-            #     lr_scheduler.step()
-            #     optimizer.zero_grad()
+                clip_grad_norm_(verifier.parameters(), max_norm_value)
+                optimizer.step()
+                lr_scheduler.step()
+                optimizer.zero_grad()
                     
-            #     cur_steps += 1
+                cur_steps += 1
                     
-            #     if cur_steps % logging_steps == 0 and is_master_process():
-            #         print(f'Epoch: {epoch + 1} -- cur_steps: {cur_steps} -- avg_loss: {total_loss/cur_steps} -- llm_loss: {all_losses["llm_loss"]} -- v_loss: {all_losses["v_loss"]}')
+                if cur_steps % logging_steps == 0 and is_master_process():
+                    print(f'Epoch: {epoch + 1} -- cur_steps: {cur_steps} -- avg_loss: {total_loss/cur_steps} -- llm_loss: {all_losses["llm_loss"]} -- v_loss: {all_losses["v_loss"]}')
             
-            # if is_master_process():
-            #     print("SAVING......................................................................")
-            #     verifier.save_model("checkpoint/verifier")
-            #     print("*********** SAVE SUCCESSFULLY ***********")
-            #     print(f"------------------- End of epoch {epoch + 1} -------------------")
+            if is_master_process():
+                print("SAVING......................................................................")
+                verifier.save_model("checkpoint/verifier")
+                print("*********** SAVE SUCCESSFULLY ***********")
+                print(f"------------------- End of epoch {epoch + 1} -------------------")
                 
     # TRAINING
     train()
