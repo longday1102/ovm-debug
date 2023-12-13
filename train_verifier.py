@@ -1,5 +1,5 @@
 from v_dataset import VerifierDataset
-from build_verifier import VerifierModel, load_generator_and_tokenizer, save_model
+from build_verifier import VerifierModel, load_generator_and_tokenizer, save_verifier
 from peft import LoraConfig, PeftConfig, get_peft_model, PeftModel
 from transformers import get_scheduler
 import torch
@@ -119,7 +119,7 @@ if __name__ == "__main__":
             
             if is_master_process():
                 print("SAVING......................................................................")
-                save_model(verifier, "verifier")
+                save_verifier(verifier, "verifier")
                 print("*********** SAVE SUCCESSFULLY ***********")
                 print(f"------------------- End of epoch {epoch + 1} -------------------")
                 
