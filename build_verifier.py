@@ -86,7 +86,7 @@ class VerifierModel(nn.Module):
         v_scores = self.vscore_head(self.dropout(v_hidden_states))
 
         v_loss, loss = None, None
-        if v_labels:
+        if v_labels is not None:
             v_loss = self.loss_fct(v_scores, v_labels)
             loss = v_loss + (llm_loss if labels is not None else 0)
 
