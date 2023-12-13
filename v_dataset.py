@@ -17,7 +17,7 @@ class VerifierDataset:
         self.max_length = max_length
         
         if load_data_method == "hf_hub":
-            dataset = load_dataset(data_path, split = "train")
+            dataset = load_dataset(data_path)
         elif load_data_method == "local":
             dataset = load_from_disk(data_path)
         else:
