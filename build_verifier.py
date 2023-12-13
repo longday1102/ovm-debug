@@ -105,7 +105,7 @@ class VerifierModel(nn.Module):
         labels = torch.where(labels.ne(IGNORE_INDEX), labels, 0)
         return F.mse_loss(scores, labels, reduction = 'sum') / scores.shape[0]
     
-def save_model(self, verifier, output_dir: str = None):
+def save_model(verifier, output_dir: str = None):
     # Saving when training with DDP
     verifier.module.backbone.save_pretrained(f"{output_dir}/backbone")  
     torch.save(
