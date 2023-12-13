@@ -128,7 +128,7 @@ def load_generator_and_tokenizer(generator_path: str, load_k_bit: bool = False, 
     else:
         bnb_config = None
       
-    f = open(generator_path)
+    f = open(f"{generator_path}/adapter_config.json")
     adapter_config = json.load(f)
     base_model = adapter_config["base_model_name_or_path"]
     
