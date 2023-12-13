@@ -106,13 +106,13 @@ class VerifierModel(nn.Module):
         return F.mse_loss(scores, labels, reduction = 'sum') / scores.shape[0]
     
     def save_model(self, output_dir: str = None):
-        self.backbone.save_pretrained(f"{output_dir}/backbone")
+        self.backbone.module.save_pretrained(f"{output_dir}/backbone")    # Training with DDP
         torch.save(
             {
                 "gain": self.gain,
                 "bias": self.bias,
                 "vscore_head": self.vscore_head,
-            }
+            },
             f"{output_dir}/vrf_params"
         )
         
