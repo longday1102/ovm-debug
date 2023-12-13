@@ -71,8 +71,8 @@ if __name__ == "__main__":
             return ddp_rank == 0
         print(verifier.module.backbone.device)
         print(next(verifier.module.vscore_head.parameters()).device)
-        print(next(verifier.gain.parameters()).device)
-        print(next(verifier.bias.parameters()).device)
+        print(next(verifier.module.gain.parameters()).device)
+        print(next(verifier.module.bias.parameters()).device)
     
         
     #     epochs = 2
