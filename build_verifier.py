@@ -109,9 +109,9 @@ class VerifierModel(nn.Module):
         self.backbone.module.save_pretrained(f"{output_dir}/backbone")    # Training with DDP
         torch.save(
             {
-                "gain": self.gain,
-                "bias": self.bias,
-                "vscore_head": self.vscore_head,
+                "gain": self.gain.module.state_dict(),
+                "bias": self.bias.module.state_dict(),
+                "vscore_head": self.vscore_head.module.state_dict(),
             },
             f"{output_dir}/vrf_params"
         )
