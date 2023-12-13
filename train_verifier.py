@@ -22,7 +22,7 @@ if __name__ == "__main__":
     generator_path = "checkpoint/generator"
 
     generator, tokenizer = load_generator_and_tokenizer(
-        generator_path = model_path,
+        generator_path = generator_path,
         load_k_bit = True,
         local_rank = local_rank,
     )
