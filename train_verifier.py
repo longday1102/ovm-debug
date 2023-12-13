@@ -19,7 +19,7 @@ if __name__ == "__main__":
     init_process_group(backend = backend)
     local_rank = int(os.environ["LOCAL_RANK"])
 
-    generator_path = "checkpoint/generator"
+    generator_path = "/kaggle/input/generator-cp/checkpoint/generator"
 
     generator, tokenizer = load_generator_and_tokenizer(
         generator_path = generator_path,
