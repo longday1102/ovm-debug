@@ -140,7 +140,7 @@ def load_generator_and_tokenizer(generator_path: str, load_k_bit: bool = False, 
         quantization_config = bnb_config,
         device_map = {"": torch.device(f"cuda:{local_rank}")} if local_rank else "auto",
         torch_dtype = torch.bfloat16,
-    )
+    )    # Only inference with single GPU
     
     generator = PeftModel.from_pretrained(model, generator_path)
     torch.cuda.empty_cache()
