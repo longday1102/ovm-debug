@@ -119,7 +119,7 @@ if __name__ == "__main__":
             
             if is_master_process():
                 print("SAVING......................................................................")
-                verifier.save_model("checkpoint/verifier")
+                save_model(verifier, "verifier")
                 print("*********** SAVE SUCCESSFULLY ***********")
                 print(f"------------------- End of epoch {epoch + 1} -------------------")
                 
