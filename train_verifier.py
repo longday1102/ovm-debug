@@ -45,7 +45,7 @@ if __name__ == "__main__":
 #     generator = get_peft_model(generator, lora_config)
     
     verifier = VerifierModel(backbone = generator, checkpoint_dir = None)
-    # verifier = verifier.to(f"cuda:{local_rank}")
+    verifier = verifier.to(f"cuda:{local_rank}")
     verifier = DDP(verifier, device_ids = [local_rank])
 
     VDataset_cls = VerifierDataset(
