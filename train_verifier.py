@@ -74,7 +74,7 @@ if __name__ == "__main__":
         lr = 2e-4
         max_norm_value = 0.3
         warmup_ratio = 0.03
-        logging_steps = 300   
+        logging_steps = 1  
         num_update_steps_per_epoch = len(train_dataloader)
         num_steps = num_update_steps_per_epoch * epochs
         num_warmup_steps = int(warmup_ratio * num_steps)
@@ -93,11 +93,6 @@ if __name__ == "__main__":
             verifier.train()
             for batch in train_dataloader:
                 batch = {k:v.to(local_rank) for k, v in batch.items()}
-                print(batch)
-                print(verifier.module.backbone.device)
-                print(verifier.module.gain.device)
-                print(verifier.module.bias.device)
-                print(next(verifier.module.vscore_head.parameters()).device)
                 outputs = verifier(
                     input_ids = batch["input_ids"],
                     attention_mask = batch["attention_mask"],
