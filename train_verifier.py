@@ -1,5 +1,5 @@
 from v_dataset import VerifierDataset
-from build_verifier import VerifierModel, load_generator_and_tokenizer
+from build_verifier import VerifierModel, load_generator_and_tokenizer, save_model
 from peft import LoraConfig, PeftConfig, get_peft_model, PeftModel
 from transformers import get_scheduler
 import torch
@@ -85,7 +85,7 @@ if __name__ == "__main__":
             num_warmup_steps = num_warmup_steps,
             num_training_steps = num_steps,
         )
-        
+        progress_bar = tqdm(range(num_steps))
         for epoch in range(epochs):
             train_dataloader.sampler.set_epoch(epoch)
             total_loss = 0
@@ -112,6 +112,7 @@ if __name__ == "__main__":
                 optimizer.zero_grad()
                     
                 cur_steps += 1
+                progress_bar.update(1)
                     
                 if cur_steps % logging_steps == 0 and is_master_process():
                     print(f'Epoch: {epoch + 1} -- cur_steps: {cur_steps} -- avg_loss: {total_loss/cur_steps} -- llm_loss: {all_losses["llm_loss"]} -- v_loss: {all_losses["v_loss"]}')
