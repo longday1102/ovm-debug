@@ -69,10 +69,10 @@ if __name__ == "__main__":
         def is_master_process():
             ddp_rank = int(os.environ['RANK'])
             return ddp_rank == 0
-    print(verifier.backbone.device)
-    print(next(verifier.vscore_head.parameters()).device)
-    print(next(verifier.gain.parameters()).device)
-    print(next(verifier.bias.parameters()).device)
+        print(verifier.backbone.device)
+        print(next(verifier.vscore_head.parameters()).device)
+        print(next(verifier.gain.parameters()).device)
+        print(next(verifier.bias.parameters()).device)
     
         
     #     epochs = 2
