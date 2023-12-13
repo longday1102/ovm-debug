@@ -55,8 +55,8 @@ if __name__ == "__main__":
         load_data_method = "hf_hub",
         mapping = True,
     )
-    dataset = VDataset_cls.dataset.set_format("torch")
-    dataset = dataset.select(range(10))
+    dataset = VDataset_cls.dataset.select(range(10))
+    dataset = dataset.set_format("torch")
     train_dataloader = DataLoader(
         dataset,
         batch_size = 1,
