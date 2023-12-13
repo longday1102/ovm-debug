@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from dataclasses import dataclass
+import json
 
 @dataclass
 class VerifierModelOutput(ModelOutput):
@@ -16,7 +17,7 @@ class VerifierModelOutput(ModelOutput):
 class VerifierModel(nn.Module):
     def __init__(self, backbone, checkpoint_dir: str = None):
         super(VerifierModel, self).__init__()
-        self.backbone = backbone
+        self.backbone = backbone    # GENRATOR
         
         device = self.backbone.device
         dtype = self.backbone.dtype
@@ -28,11 +29,17 @@ class VerifierModel(nn.Module):
             torch.randn((1,), device = device, dtype = dtype)
         )
         self.dropout = nn.Dropout(p = 0.2)
-        self.vscore_head = nn.Linear(self.backbone.get_input_embeddings().embedding_dim, 1, bias = False, device = device, dtype = dtype)
+        self.vscore_head = nn.Linear(
+            self.backbone.get_input_embeddings().embedding_dim, 1, bias = False, device = device, dtype = dtype
+        )
         
-        if checkpoint_dir:
-            verifier_params = torch.load(checkpoint_dir)
-            self.load_state_dict(verifier_params, strict = False)
+        if checkpoint_dir:    # For inference
+            self.backbone = PeftModel.from_pretrained(self.backbone, f"{checkpoint_dir}/backbone")
+            
+            vrf_params = torch.load(f"{checkpoint_dir}/vrf_params")
+            self.gain.load_state_dict(vrf_params["gain"])
+            self.bias.load_state_dict(vrf_params["bias"])
+            self.vscore_head.load_state_dict(vrf_params["vscore_head"])  
             torch.cuda.empty_cache()
         
         else:
@@ -99,30 +106,43 @@ class VerifierModel(nn.Module):
         return F.mse_loss(scores, labels, reduction = 'sum') / scores.shape[0]
     
     def save_model(self, output_dir: str = None):
-        torch.save(self.state_dict(), output_dir)
+        self.backbone.save_pretrained(f"{output_dir}/backbone")
+        torch.save(
+            {
+                "gain": self.gain,
+                "bias": self.bias,
+                "vscore_head": self.vscore_head,
+            }
+            f"{output_dir}/vrf_params"
+        )
+        
     
-def load_generator_and_tokenizer(model_path: str, peft_path: str, local_rank: int):
+def load_generator_and_tokenizer(generator_path: str, load_k_bit: bool = False, local_rank: int = None): 
+    if load_k_bit:
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit = True,
+            bnb_4bit_use_double_quant = False,
+            bnb_4bit_quant_type = "nf4",
+            bnb_4bit_compute_dtype = torch.bfloat16,
+        )
+    else:
+        bnb_config = None
+      
+    f = open(generator_path)
+    adapter_config = json.load(f)
+    base_model = adapter_config["base_model_name_or_path"]
     
-    tokenizer = AutoTokenizer.from_pretrained(model_path)
+    tokenizer = AutoTokenizer.from_pretrained(base_model)
     tokenizer.pad_token = tokenizer.eos_token
-    
-    bnb_config = BitsAndBytesConfig(
-        load_in_4bit = True,
-        bnb_4bit_use_double_quant = False,
-        bnb_4bit_quant_type = "nf4",
-        bnb_4bit_compute_dtype = torch.bfloat16,
-    )
-    
+        
     model = AutoModelForCausalLM.from_pretrained(
-        model_path,
+        base_model,
         quantization_config = bnb_config,
-        device_map = {"": torch.device(f"cuda:{local_rank}")},
+        device_map = {"": torch.device(f"cuda:{local_rank}")} if local_rank else "auto",
         torch_dtype = torch.bfloat16,
     )
     
-    generator = PeftModel.from_pretrained(model, peft_path)
-    generator = generator.merge_and_unload()
+    generator = PeftModel.from_pretrained(model, generator_path)
     torch.cuda.empty_cache()
     
     return generator, tokenizer
-    
