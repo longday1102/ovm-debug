@@ -116,8 +116,7 @@ def save_model(verifier, output_dir: str = None):
         },
         f"{output_dir}/vrf_params"
     )
-        
-    
+            
 def load_generator_and_tokenizer(generator_path: str, load_k_bit: bool = False, local_rank: int = None): 
     if load_k_bit:
         bnb_config = BitsAndBytesConfig(
