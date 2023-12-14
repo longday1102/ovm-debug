@@ -17,10 +17,10 @@ class VerifierModelOutput(ModelOutput):
 class VerifierModel(nn.Module):
     def __init__(self, backbone, checkpoint_dir: str = None):
         super(VerifierModel, self).__init__()
-        for param in backbone.parameters():
-            param.requires_grad = False
         self.backbone = backbone    # GENRATOR
-        
+        for param in self.backbone.parameters():
+            param.requires_grad = False
+            
         device = self.backbone.device
         dtype = self.backbone.dtype
 
@@ -49,6 +49,9 @@ class VerifierModel(nn.Module):
             
         print("All parameters of vscore_head aren't frozen: ", 
               all(param.requires_grad == True for param in self.vscore_head.parameters())
+             )
+        print("All parameters of backbone are frozen: ",
+              all(param.requires_grad == False for param in self.backbone.parameters())
              )
         self.pad_token_id = backbone.config.pad_token_id
     
