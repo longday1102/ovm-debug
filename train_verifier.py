@@ -71,7 +71,7 @@ if __name__ == "__main__":
             return ddp_rank == 0
     
         epochs = 2
-        lr = 2e-4
+        lr = 5e-5
         max_norm_value = 0.3
         warmup_ratio = 0.03
         logging_steps = 50 
