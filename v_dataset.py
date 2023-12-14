@@ -73,7 +73,7 @@ class VerifierDataset:
         result["labels"] = [token if mask != 0 else IGNORE_INDEX for token, mask in zip(result["labels"], result["attention_mask"])]
         
         v_labels = [int(label)] * len(result["input_ids"])
-        result["v_labels"] = [token if mask != 0 else IGNORE_INDEX for token, mask in zip(result["labels"], result["attention_mask"])]
+        result["v_labels"] = [token if mask != 0 else IGNORE_INDEX for token, mask in zip(v_labels, result["attention_mask"])]
         
         result["input_ids"], result["attention_mask"], result["labels"], result["v_labels"] = self.left_padding(
             result["input_ids"], result["attention_mask"], result["labels"], result["v_labels"], padding_value = IGNORE_INDEX)
