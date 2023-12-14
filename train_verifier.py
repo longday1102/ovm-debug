@@ -78,7 +78,7 @@ if __name__ == "__main__":
         num_update_steps_per_epoch = len(train_dataloader)
         num_steps = num_update_steps_per_epoch * epochs
         num_warmup_steps = int(warmup_ratio * num_steps)
-        optimizer = AdamW(verifier.parameters(), lr = lr, weight_decay = 0.001)
+        optimizer = AdamW(filter(lambda p: p.requires_grad, verifier.parameters()), lr = lr, weight_decay = 0.001)
         lr_scheduler = get_scheduler(
             "cosine",
             optimizer = optimizer,
