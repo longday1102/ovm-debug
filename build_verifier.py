@@ -46,8 +46,9 @@ class VerifierModel(nn.Module):
         
         else:
             self.init_head_params()
+            
         print("All parameters of vscore_head aren't frozen: ", 
-              all(param.requires_grad == True for param in vscore_head.parameters())
+              all(param.requires_grad == True for param in self.vscore_head.parameters())
              )
         self.pad_token_id = backbone.config.pad_token_id
     
