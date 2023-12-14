@@ -17,6 +17,8 @@ class VerifierModelOutput(ModelOutput):
 class VerifierModel(nn.Module):
     def __init__(self, backbone, checkpoint_dir: str = None):
         super(VerifierModel, self).__init__()
+        for param in backbone.parameters():
+            param.requires_grad = False
         self.backbone = backbone    # GENRATOR
         
         device = self.backbone.device
@@ -44,13 +46,14 @@ class VerifierModel(nn.Module):
         
         else:
             self.init_head_params()
-
+        print("All parameters of vscore_head aren't frozen: ", 
+              all(param.requires_grad == True for param in vscore_head.parameters())
+             )
         self.pad_token_id = backbone.config.pad_token_id
     
     def init_head_params(self):
         output_embeddings = self.backbone.get_output_embeddings().weight.data
         output_embeddings_avg = output_embeddings.mean(dim = 0, keepdim = True)
-
         self.vscore_head.weight = nn.Parameter(output_embeddings_avg)
 
     def loss_fct(self, v_scores: torch.FloatTensor, v_labels: torch.LongTensor):
