@@ -59,7 +59,7 @@ if __name__ == "__main__":
     dataset.set_format("torch")
     train_dataloader = DataLoader(
         dataset,
-        batch_size = 1,
+        batch_size = 2,
         sampler = DistributedSampler(dataset),
         pin_memory = True,
     )
