@@ -39,7 +39,7 @@ if __name__ == "__main__":
         mapping = True,
     )
 
-    dataset = VDatasset_cls.dataset.set_format("torch")
+    dataset = VDataset_cls.dataset.set_format("torch")
     train_dataloader = DataLoader(
         dataset,
         batch_size = 16,
