@@ -20,7 +20,7 @@ class VerifierModel(nn.Module):
         self.backbone = backbone    # GENRATOR
         for param in self.backbone.parameters():
             param.requires_grad = False
-            
+        
         device = self.backbone.device
         dtype = self.backbone.dtype
 
@@ -36,12 +36,11 @@ class VerifierModel(nn.Module):
         )
         
         if checkpoint_dir:    # For inference
-            self.backbone = PeftModel.from_pretrained(self.backbone, f"{checkpoint_dir}/backbone")
-            
-            vrf_params = torch.load(f"{checkpoint_dir}/vrf_params")
+            vrf_params = torch.load(checkpoint_dir)
             self.gain.load_state_dict(vrf_params["gain"])
             self.bias.load_state_dict(vrf_params["bias"])
-            self.vscore_head.load_state_dict(vrf_params["vscore_head"])  
+            self.vscore_head.load_state_dict(vrf_params["vscore_head"])
+            
             torch.cuda.empty_cache()
         
         else:
@@ -58,6 +57,7 @@ class VerifierModel(nn.Module):
     def init_head_params(self):
         output_embeddings = self.backbone.get_output_embeddings().weight.data
         output_embeddings_avg = output_embeddings.mean(dim = 0, keepdim = True)
+
         self.vscore_head.weight = nn.Parameter(output_embeddings_avg)
 
     def loss_fct(self, v_scores: torch.FloatTensor, v_labels: torch.LongTensor):
@@ -113,17 +113,16 @@ class VerifierModel(nn.Module):
         return F.mse_loss(scores, labels, reduction = 'sum') / scores.shape[0]
     
 def save_verifier(verifier, output_dir: str = None):
-    # Saving when training with DDP
-    verifier.module.backbone.save_pretrained(f"{output_dir}/backbone")  
+    # Saving when training with DDP  
     torch.save(
         {
             "gain": verifier.module.gain.state_dict(),
             "bias": verifier.module.bias.state_dict(),
             "vscore_head": verifier.module.vscore_head.state_dict(),
         },
-        f"{output_dir}/vrf_params"
+        output_dir
     )
-            
+        
 def load_generator_and_tokenizer(generator_path: str, load_k_bit: bool = False, local_rank: int = None): 
     if load_k_bit:
         bnb_config = BitsAndBytesConfig(
@@ -145,9 +144,9 @@ def load_generator_and_tokenizer(generator_path: str, load_k_bit: bool = False, 
     model = AutoModelForCausalLM.from_pretrained(
         base_model,
         quantization_config = bnb_config,
-        device_map = {"": torch.device(f"cuda:{local_rank}")} if local_rank is not None else "auto",
+        device_map = {"": torch.device(f"cuda:{local_rank}")} if local_rank else "auto",
         torch_dtype = torch.bfloat16,
-    )    # Only inference with single GPU
+    )
     
     generator = PeftModel.from_pretrained(model, generator_path)
     torch.cuda.empty_cache()
