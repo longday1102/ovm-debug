@@ -31,8 +31,8 @@ class VerifierModel(nn.Module):
         
         if checkpoint_dir:    # For inference
             vrf_params = torch.load(checkpoint_dir)
-            self.gain = vrf_params["gain"]
-            self.bias = vrf_params["bias"]
+            self.gain = vrf_params["gain"].to(device)
+            self.bias = vrf_params["bias"].to(device)
             self.vscore_head.load_state_dict(vrf_params["vscore_head"])
             torch.cuda.empty_cache()
         
