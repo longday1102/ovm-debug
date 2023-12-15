@@ -24,12 +24,6 @@ class VerifierModel(nn.Module):
         device = self.backbone.device
         dtype = self.backbone.dtype
 
-        self.gain = nn.Parameter(
-            torch.randn((1,), device = device, dtype = dtype)
-        )
-        self.bias = nn.Parameter(
-            torch.randn((1,), device = device, dtype = dtype)
-        )
         self.dropout = nn.Dropout(p = 0.2)
         self.vscore_head = nn.Linear(
             self.backbone.get_input_embeddings().embedding_dim, 1, bias = False, device = device, dtype = dtype
@@ -37,14 +31,19 @@ class VerifierModel(nn.Module):
         
         if checkpoint_dir:    # For inference
             vrf_params = torch.load(checkpoint_dir)
-            self.gain.load_state_dict(vrf_params["gain"])
-            self.bias.load_state_dict(vrf_params["bias"])
+            self.gain = vrf_params["gain"]
+            self.bias = vrf_params["bias"]
             self.vscore_head.load_state_dict(vrf_params["vscore_head"])
-            
             torch.cuda.empty_cache()
         
         else:
             self.init_head_params()
+            self.gain = nn.Parameter(
+                torch.randn((1,), device = device, dtype = dtype)
+            )
+            self.bias = nn.Parameter(
+                torch.randn((1,), device = device, dtype = dtype)
+            )
             
         print("All parameters of vscore_head aren't frozen: ", 
               all(param.requires_grad == True for param in self.vscore_head.parameters())
@@ -116,8 +115,8 @@ def save_verifier(verifier, output_dir: str = None):
     # Saving when training with DDP  
     torch.save(
         {
-            "gain": verifier.module.gain.state_dict(),
-            "bias": verifier.module.bias.state_dict(),
+            "gain": verifier.module.gain,
+            "bias": verifier.module.bias,
             "vscore_head": verifier.module.vscore_head.state_dict(),
         },
         output_dir
