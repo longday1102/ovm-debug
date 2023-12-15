@@ -103,7 +103,7 @@ if __name__ == "__main__":
             
             if is_master_process():
                 print("SAVING......................................................................")
-                save_verifier(verifier, "checkpoint/verifier")
+                save_verifier(verifier, "checkpoint")
                 print("*********** SAVE SUCCESSFULLY ***********")
                 print(f"------------------- End of epoch {epoch + 1} -------------------")
                 
