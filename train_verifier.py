@@ -8,7 +8,6 @@ from torch.optim import AdamW
 from tqdm import tqdm
 from torch.distributed import  destroy_process_group, init_process_group
 from torch.utils.data.distributed import DistributedSampler
-from torch.nn.utils import clip_grad_norm_
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import SequentialSampler
 import os
@@ -28,22 +27,6 @@ if __name__ == "__main__":
     )
 #     generator = generator.merge_and_unload()
     
-#     r = 64
-#     lora_alpha = 16
-#     lora_dropout = 0.1
-
-#     lora_config = LoraConfig(
-#         r = r,
-#         lora_alpha = lora_alpha,
-#         lora_dropout = lora_dropout,
-#         bias = "none",
-#         task_type = "CAUSAL_LM",
-#         target_modules = [
-#              "q_proj" , "k_proj" , "v_proj", "o_proj", "gate_proj" , "up_proj" ,"down_proj", "lm_head",
-#         ]
-#     )
-#     generator = get_peft_model(generator, lora_config)
-    
     verifier = VerifierModel(backbone = generator, checkpoint_dir = None)
     verifier = verifier.to(f"cuda:{local_rank}")
     verifier = DDP(verifier, device_ids = [local_rank])
@@ -55,8 +38,8 @@ if __name__ == "__main__":
         load_data_method = "hf_hub",
         mapping = True,
     )
-    dataset = VDataset_cls.dataset
-    dataset.set_format("torch")
+
+    dataset = VDatasset_cls.dataset.set_format("torch")
     train_dataloader = DataLoader(
         dataset,
         batch_size = 16,
@@ -69,22 +52,23 @@ if __name__ == "__main__":
         def is_master_process():
             ddp_rank = int(os.environ['RANK'])
             return ddp_rank == 0
-    
+        
         epochs = 2
         lr = 5e-5
-        max_norm_value = 0.3
-        warmup_ratio = 0.03
-        logging_steps = 1
+        logging_steps = 1   
         num_update_steps_per_epoch = len(train_dataloader)
         num_steps = num_update_steps_per_epoch * epochs
-        num_warmup_steps = int(warmup_ratio * num_steps)
-        optimizer = AdamW(filter(lambda p: p.requires_grad, verifier.parameters()), lr = lr, weight_decay = 0.001)
+        optimizer = AdamW(
+            filter(lambda p: p.requires_grad, verifier.parameters()),
+            lr = lr,
+        )
         lr_scheduler = get_scheduler(
-            "cosine",
+            "linear",
             optimizer = optimizer,
-            num_warmup_steps = num_warmup_steps,
+            num_warmup_steps = 0,
             num_training_steps = num_steps,
         )
+        
         progress_bar = tqdm(range(num_steps))
         for epoch in range(epochs):
             train_dataloader.sampler.set_epoch(epoch)
@@ -105,8 +89,7 @@ if __name__ == "__main__":
                 all_losses = outputs.all_losses
                 total_loss += loss.item()
                 loss.backward()
-                    
-                clip_grad_norm_(verifier.parameters(), max_norm_value)
+        
                 optimizer.step()
                 lr_scheduler.step()
                 optimizer.zero_grad()
@@ -119,7 +102,7 @@ if __name__ == "__main__":
             
             if is_master_process():
                 print("SAVING......................................................................")
-                save_verifier(verifier, "verifier")
+                save_verifier(verifier, "checkpoint/verifier")
                 print("*********** SAVE SUCCESSFULLY ***********")
                 print(f"------------------- End of epoch {epoch + 1} -------------------")
                 
