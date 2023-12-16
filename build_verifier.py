@@ -1,12 +1,11 @@
 from transformers.generation.utils import ModelOutput
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
-from peft import PeftModel
+from peft import PeftModel, PeftConfig
 from typing import Optional, List, Dict
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from dataclasses import dataclass
-import json
 
 @dataclass
 class VerifierModelOutput(ModelOutput):
@@ -133,10 +132,8 @@ def load_generator_and_tokenizer(generator_path: str, load_k_bit: bool = False, 
     else:
         bnb_config = None
       
-    f = open(f"{generator_path}/adapter_config.json")
-    adapter_config = json.load(f)
-    base_model = adapter_config["base_model_name_or_path"]
-    
+    config = PeftConfig.from_pretrained(generator_path)
+    base_model = config.base_model_name_or_path
     tokenizer = AutoTokenizer.from_pretrained(base_model)
     tokenizer.pad_token = tokenizer.eos_token
         
