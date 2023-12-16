@@ -18,7 +18,7 @@ if __name__ == "__main__":
     init_process_group(backend = backend)
     local_rank = int(os.environ["LOCAL_RANK"])
 
-    generator_path = "/kaggle/input/generator-cp/checkpoint/generator"
+    generator_path = "longhoang06/OVM-generator"
 
     generator, tokenizer = load_generator_and_tokenizer(
         generator_path = generator_path,
@@ -103,7 +103,7 @@ if __name__ == "__main__":
             
             if is_master_process():
                 print("SAVING......................................................................")
-                save_verifier(verifier, "checkpoint")
+                save_verifier(verifier, "checkpoint.pt")
                 print("*********** SAVE SUCCESSFULLY ***********")
                 print(f"------------------- End of epoch {epoch + 1} -------------------")
                 
