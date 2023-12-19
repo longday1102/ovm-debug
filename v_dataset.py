@@ -23,7 +23,7 @@ class VerifierDataset:
         else:
             raise NotImplementedError        
         self.dataset = dataset["train"].filter(
-            lambda x: len(self.tokenizer(self.prompter.generate_prompt(question = x["question"], answer = x["answer"])).input_ids) + 1 <= self.max_length
+            lambda x: len(self.tokenizer(self.prompter.generate_prompt(instruction = x["question"], response = x["answer"])).input_ids) + 1 <= self.max_length
         )           
         if mapping:
             self.dataset = self.dataset.map(self.get_items, num_proc = 4)
@@ -46,8 +46,8 @@ class VerifierDataset:
         return input_ids, attention_mask, labels, v_labels
                
     def get_items(self, dataset, IGNORE_INDEX : int = -100):
-        prompt = self.prompter.generate_prompt(question = dataset["question"], answer = dataset["candidate"])
-        question = self.prompter.generate_prompt(question = dataset["question"])
+        prompt = self.prompter.generate_prompt(instruction = dataset["question"], response = dataset["candidate"])
+        question = self.prompter.generate_prompt(instruction = dataset["question"])
         len_question = len(self.tokenizer(question).input_ids)
         label = dataset["label"]
         
