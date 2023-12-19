@@ -34,7 +34,7 @@ if __name__ == "__main__":
     VDataset_cls = VerifierDataset(
         tokenizer = tokenizer,
         data_path = "longhoang06/vi-ovm-dataset",
-        max_length = 640,
+        max_length = 512,
         load_data_method = "hf_hub",
         mapping = True,
     )
@@ -56,7 +56,7 @@ if __name__ == "__main__":
         
         epochs = 2
         lr = 5e-5
-        logging_steps = 50   
+        logging_steps = 1   
         num_update_steps_per_epoch = len(train_dataloader)
         num_steps = num_update_steps_per_epoch * epochs
         optimizer = AdamW(
