@@ -26,7 +26,7 @@ class VerifierDataset:
             lambda x: len(self.tokenizer(self.prompter.generate_prompt(instruction = x["question"], response = x["answer"])).input_ids) + 1 <= self.max_length
         )           
         if mapping:
-            self.dataset = self.dataset.map(self.get_items, num_proc = 4)
+            self.dataset = self.dataset.map(self.get_items, num_proc = 16)
             self.dataset = self.dataset.remove_columns(["question", "answer", "candidate", "label"])
             
     def left_padding(
