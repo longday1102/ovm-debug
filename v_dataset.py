@@ -23,11 +23,10 @@ class VerifierDataset:
         else:
             raise NotImplementedError        
         self.dataset = dataset["train"].filter(
-            lambda x: len(self.tokenizer(self.prompter.verifier_prompt(question = x["question"], answer = x["answer"])).input_ids) + 1 <= self.max_length
+            lambda x: len(self.tokenizer(self.prompter.generate_prompt(question = x["question"], answer = x["answer"])).input_ids) + 1 <= self.max_length
         )           
         if mapping:
-            self.dataset = self.dataset.select(range(10))
-            self.dataset = self.dataset.map(self.get_items, num_proc = 16)
+            self.dataset = self.dataset.map(self.get_items, num_proc = 4)
             self.dataset = self.dataset.remove_columns(["question", "answer", "candidate", "label"])
             
     def left_padding(
@@ -47,8 +46,8 @@ class VerifierDataset:
         return input_ids, attention_mask, labels, v_labels
                
     def get_items(self, dataset, IGNORE_INDEX : int = -100):
-        prompt = self.prompter.verifier_prompt(question = dataset["question"], answer = dataset["candidate"])
-        question = prompt.split("### Trả lời:")[0]
+        prompt = self.prompter.generate_prompt(question = dataset["question"], answer = dataset["candidate"])
+        question = self.prompter.generate_prompt(question = dataset["question"])
         len_question = len(self.tokenizer(question).input_ids)
         label = dataset["label"]
         
@@ -78,4 +77,4 @@ class VerifierDataset:
         result["input_ids"], result["attention_mask"], result["labels"], result["v_labels"] = self.left_padding(
             result["input_ids"], result["attention_mask"], result["labels"], result["v_labels"], padding_value = IGNORE_INDEX)
         
-        return result   
+        return result
