@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from dataclasses import dataclass
+import json
 
 @dataclass
 class VerifierModelOutput(ModelOutput):
@@ -22,7 +23,7 @@ class VerifierModel(nn.Module):
         
         device = self.backbone.device
         dtype = self.backbone.dtype
-
+        
         self.dropout = nn.Dropout(p = 0.2)
         self.vscore_head = nn.Linear(
             self.backbone.get_input_embeddings().embedding_dim, 1, bias = False, device = device, dtype = dtype
@@ -33,6 +34,7 @@ class VerifierModel(nn.Module):
             self.gain = vrf_params["gain"].to(device)
             self.bias = vrf_params["bias"].to(device)
             self.vscore_head.load_state_dict(vrf_params["vscore_head"])
+            
             torch.cuda.empty_cache()
         
         else:
@@ -120,6 +122,7 @@ def save_verifier(verifier, output_dir: str = None):
         },
         output_dir
     )
+    torch.cuda.empty_cache()
         
 def load_generator_and_tokenizer(generator_path: str, load_k_bit: bool = False, local_rank: int = None): 
     if load_k_bit:
