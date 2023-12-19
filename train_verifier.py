@@ -34,7 +34,7 @@ if __name__ == "__main__":
     VDataset_cls = VerifierDataset(
         tokenizer = tokenizer,
         data_path = "longhoang06/vi-ovm-dataset",
-        max_length = 512,
+        max_length = 640,
         load_data_method = "hf_hub",
         mapping = True,
     )
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     dataset.set_format("torch")
     train_dataloader = DataLoader(
         dataset,
-        batch_size = 16,
+        batch_size = 32,
         sampler = DistributedSampler(dataset),
         pin_memory = True,
     )
@@ -56,7 +56,7 @@ if __name__ == "__main__":
         
         epochs = 2
         lr = 5e-5
-        logging_steps = 1   
+        logging_steps = 50   
         num_update_steps_per_epoch = len(train_dataloader)
         num_steps = num_update_steps_per_epoch * epochs
         optimizer = AdamW(
@@ -103,7 +103,7 @@ if __name__ == "__main__":
             
             if is_master_process():
                 print("SAVING......................................................................")
-                save_verifier(verifier, "checkpoint.pt")
+                save_verifier(verifier, "verifier.pt")
                 print("*********** SAVE SUCCESSFULLY ***********")
                 print(f"------------------- End of epoch {epoch + 1} -------------------")
                 
